@@ -32,10 +32,6 @@ jobs:
 
     - name: Installing dependencies
       run: npm ci
-
-    - name: Format with prettier
-      run: npm run format # Assumes "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx}\" --ignore-path .gitignore"
-        # If you want to auto-fix, use `npm run format` instead
  
       # Build the project
     - name: Build
