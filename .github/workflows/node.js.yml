@@ -10,21 +10,73 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-
+  build-test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [22.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
+    #checking out the repo
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+        #setting up node.js   
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: npm ci
+
+    - name: Installing dependencies
+      run: npm ci
+
+    - name: Format with prettier
+      run: npm run format:check # Assumes "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx}\" --ignore-path .gitignore"
+        # If you want to auto-fix, use `npm run format` instead
+ 
+      # Build the project
+    - name: Build
+      run: npm run build --if-present
+ 
+      # Run tests
+    - name: Test
+      run: npm test
+ 
+      # Run Snyk to check for vulnerabilities
+    - name: Run Snyk
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        command: test
+        args: --severity-threshold=high --sarif-file-output=snyk.sarif
+      continue-on-error: true # Allow workflow to continue even if vulnerabilities are found
+ 
+      # Upload Snyk results to GitHub Code Scanning
+    - name: Upload Snyk SARIF
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+       sarif_file: snyk.sarif
+      if: always() # Run even if Snyk step fails
+ 
+      # Run SonarQube scan
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@v4
+      env:
+       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      with:
+       args: >
+        -Dsonar.projectKey=nodeproject           
+        -Dsonar.organization=classci          
+        -Dsonar.sources=.            
+        -Dsonar.tests=tests            
+        -Dsonar.test.inclusions=**/*test*/**,**/*.spec.*,**/*.test.*            
+        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info            
+        -Dsonar.exclusions=node_modules/**,dist/**            
+        -Dsonar.qualitygate.wait=true
+ 
   
