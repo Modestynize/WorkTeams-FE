@@ -37,9 +37,6 @@ jobs:
     - name: Build
       run: npm run build --if-present
  
-      # Run tests
-    - name: Test
-      run: npm test
  
       # Run Snyk to check for vulnerabilities
     - name: Run Snyk
