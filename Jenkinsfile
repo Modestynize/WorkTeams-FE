@@ -4,7 +4,7 @@ pipeline {
 
     tools {
 
-        nodejs 'NodeJS' // Assumes NodeJS plugin with 'Node16' installation configured
+        nodejs 'Nodejs' // Assumes NodeJS plugin with 'Node16' installation configured
 
     }
 
