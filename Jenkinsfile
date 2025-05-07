@@ -14,7 +14,7 @@ pipeline {
 
             steps {
 
-                git branch: 'main', url: 'https://github.com/Modestynize/WorkTeams-FE.git'
+                git branch: 'master', url: 'https://github.com/Modestynize/WorkTeams-FE.git'
 
             }
 
